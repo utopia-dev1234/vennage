@@ -19,7 +19,9 @@
     "eject": "react-scripts eject",
     "server": "cd server && npm start",
     "server:dev": "cd server && npm run dev",
-    "install:all": "npm install"
+    "install:all": "npm install",
+    "prebuild": "echo Building frontend...",
+    "postbuild": "echo Frontend build complete. Build folder is ready for deployment."
   },
   "eslintConfig": {
     "extends": [
@@ -49,7 +51,6 @@
   },
   "proxy": "http://localhost:3001",
   "description": "A web application that generates a set of 4 consistent icons from a single prompt using the Replicate API with Flux Schnell model.",
-  "main": "postcss.config.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/utopia-dev1234/vennage.git"
@@ -57,9 +58,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
   "bugs": {
     "url": "https://github.com/utopia-dev1234/vennage/issues"
-  },
-  "homepage": "https://github.com/utopia-dev1234/vennage#readme"
+  }
 }

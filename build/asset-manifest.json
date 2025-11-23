@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/utopia-dev1234/vennage/static/css/main.94bf72d6.css",
+    "main.js": "/utopia-dev1234/vennage/static/js/main.d81f07b2.js",
+    "index.html": "/utopia-dev1234/vennage/index.html",
+    "main.94bf72d6.css.map": "/utopia-dev1234/vennage/static/css/main.94bf72d6.css.map",
+    "main.d81f07b2.js.map": "/utopia-dev1234/vennage/static/js/main.d81f07b2.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.94bf72d6.css",
+    "static/js/main.d81f07b2.js"
+  ]
+}

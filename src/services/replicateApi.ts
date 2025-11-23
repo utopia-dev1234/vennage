@@ -1,6 +1,7 @@
 import type { GenerateIconsRequest, GenerateIconsResponse } from '../types';
 
-const API_BASE_URL = '/api';
+// Use environment variable in production, or relative path in development
+const API_BASE_URL = process.env.REACT_APP_API_URL || '/api';
 
 export async function generateIcons(
   request: GenerateIconsRequest

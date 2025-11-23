@@ -2,14 +2,26 @@ import express from 'express';
 import cors from 'cors';
 import Replicate from 'replicate';
 import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+import { existsSync } from 'fs';
 
 dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
 app.use(cors());
 app.use(express.json());
+
+// Serve static files from React app in production
+const buildPath = join(__dirname, '../build');
+if (existsSync(buildPath)) {
+  app.use(express.static(buildPath));
+}
 
 const replicate = new Replicate({
   auth: process.env.REPLICATE_API_TOKEN || 'r8_N66Wxoi7DNfuLDi41QHPt7ZnD8Cn2Rh30pWRF',
@@ -157,7 +169,21 @@ app.get('/api/proxy-image', async (req, res) => {
   }
 });
 
+// Handle React routing - return all non-API requests to React app
+if (existsSync(buildPath)) {
+  app.get('*', (req, res) => {
+    // Don't serve React app for API routes
+    if (req.path.startsWith('/api')) {
+      return res.status(404).json({ error: 'API endpoint not found' });
+    }
+    res.sendFile(join(buildPath, 'index.html'));
+  });
+}
+
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
+  if (existsSync(buildPath)) {
+    console.log('Serving React app from build directory');
+  }
 });
 
