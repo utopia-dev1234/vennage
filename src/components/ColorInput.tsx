@@ -1,79 +1,60 @@
-import React, { useState } from 'react';
-
 interface ColorInputProps {
   colors: string[];
-  onChange: (colors: string[]) => void;
+  onColorsChange: (colors: string[]) => void;
 }
 
-export default function ColorInput({ colors, onChange }: ColorInputProps) {
-  const [colorInput, setColorInput] = useState('');
-
+export default function ColorInput({ colors, onColorsChange }: ColorInputProps) {
   const addColor = () => {
-    const trimmed = colorInput.trim();
-    if (trimmed && /^#[0-9A-Fa-f]{6}$/.test(trimmed)) {
-      if (!colors.includes(trimmed.toUpperCase())) {
-        onChange([...colors, trimmed.toUpperCase()]);
-        setColorInput('');
-      }
-    } else if (trimmed) {
-      alert('Please enter a valid HEX color (e.g., #FF5733)');
-    }
+    onColorsChange([...colors, '#000000']);
   };
 
-  const removeColor = (colorToRemove: string) => {
-    onChange(colors.filter(c => c !== colorToRemove));
+  const removeColor = (index: number) => {
+    onColorsChange(colors.filter((_, i) => i !== index));
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      addColor();
-    }
+  const updateColor = (index: number, value: string) => {
+    const newColors = [...colors];
+    newColors[index] = value;
+    onColorsChange(newColors);
   };
 
   return (
-    <div className="space-y-2">
-      <label className="block text-sm font-medium text-gray-700">
-        Optional: Brand Colors (HEX)
+    <div className="w-full">
+      <label className="block text-sm font-medium text-gray-700 mb-2">
+        Optional Brand Colors (HEX)
       </label>
-      <div className="flex gap-2">
-        <input
-          type="text"
-          value={colorInput}
-          onChange={(e) => setColorInput(e.target.value)}
-          onKeyPress={handleKeyPress}
-          placeholder="#FF5733"
-          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
+      <div className="space-y-2">
+        {colors.map((color, index) => (
+          <div key={index} className="flex items-center gap-2">
+            <input
+              type="color"
+              value={color}
+              onChange={(e) => updateColor(index, e.target.value)}
+              className="w-12 h-10 border border-gray-300 rounded cursor-pointer"
+            />
+            <input
+              type="text"
+              value={color}
+              onChange={(e) => updateColor(index, e.target.value)}
+              placeholder="#000000"
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              pattern="^#[0-9A-Fa-f]{6}$"
+            />
+            <button
+              onClick={() => removeColor(index)}
+              className="px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+            >
+              Remove
+            </button>
+          </div>
+        ))}
         <button
           onClick={addColor}
-          className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+          className="w-full px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
         >
-          Add
+          + Add Color
         </button>
       </div>
-      {colors.length > 0 && (
-        <div className="flex flex-wrap gap-2 mt-2">
-          {colors.map((color) => (
-            <div
-              key={color}
-              className="flex items-center gap-2 px-3 py-1 bg-gray-100 rounded-lg"
-            >
-              <div
-                className="w-6 h-6 rounded border border-gray-300"
-                style={{ backgroundColor: color }}
-              />
-              <span className="text-sm font-mono">{color}</span>
-              <button
-                onClick={() => removeColor(color)}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                ×
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   );
 }

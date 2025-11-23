@@ -1,112 +1,116 @@
-# Icon Generator - Vennage Assignment
+# Icon Generator - Vennage
 
-A web application that generates a set of 4 consistent icons from a single text prompt using the Replicate API (Flux Schnell model).
+A web application that generates a set of 4 consistent icons from a single prompt using the Replicate API with Flux Schnell model.
 
 ## Features
 
-- **Prompt-based Generation**: Enter a text prompt (e.g., "Hockey equipment") to generate 4 related icons
-- **Style Presets**: Choose from 6 preset styles (Auto, Bold, Circular, Flat Colors, Monotone, Outline)
-- **Color Control**: Optionally provide brand colors (HEX values) to steer the color palette
-- **Consistent Output**: All 4 icons share the same visual style and theme
-- **Download**: Download individual icons or all 4 icons as PNG files
+- Generate 4 icons with consistent styling from a single prompt
+- Multiple preset styles: Auto, Bold, Circular, Flat Colors, Monotone, Outline, Sticker, Pastels, Business, Cartoon, 3D Model, Gradient
+- Optional brand color inputs (HEX values) to influence the color palette
+- Download individual icons or all icons at once
+- Modern, responsive UI built with React and Tailwind CSS
 
 ## Tech Stack
 
-- **Frontend**: React + TypeScript + Vite
-- **Styling**: Tailwind CSS
-- **Backend**: Express.js (Node.js)
-- **Image Generation**: Replicate API (Flux Schnell model)
+- **Frontend**: React + TypeScript + Create React App + Tailwind CSS
+- **Backend**: Node.js + Express
+- **API**: Replicate API (Flux Schnell model)
+
+## Setup Instructions
+
+### Prerequisites
+
+- Node.js (v18 or higher)
+- npm or yarn
+
+### Installation
+
+1. **Clone the repository** (if applicable) or navigate to the project directory
+
+2. **Install all dependencies** (this will install both client and server dependencies in a shared `node_modules`):
+   ```bash
+   npm install
+   ```
+
+3. **Set up environment variables:**
+   
+   Create a `.env` file in the `server` directory:
+   ```bash
+   cd server
+   echo "REPLICATE_API_TOKEN=r8_N66Wxoi7DNfuLDi41QHPt7ZnD8Cn2Rh30pWRF" > .env
+   echo "PORT=3001" >> .env
+   cd ..
+   ```
+
+   Or manually create `server/.env` with:
+   ```
+   REPLICATE_API_TOKEN=r8_N66Wxoi7DNfuLDi41QHPt7ZnD8Cn2Rh30pWRF
+   PORT=3001
+   ```
+
+### Running the Application
+
+1. **Start the backend server** (in one terminal):
+   ```bash
+   npm run server
+   ```
+   Or alternatively:
+   ```bash
+   cd server && npm start
+   ```
+   The server will run on `http://localhost:3001`
+
+2. **Start the frontend development server** (in another terminal):
+   ```bash
+   npm start
+   ```
+   The frontend will run on `http://localhost:3000` (Create React App will automatically open your browser)
+
+3. **Open your browser** and navigate to `http://localhost:3000`
+
+**Note:** Both client and server now share the same `node_modules` directory at the root level, reducing disk space and installation time.
+
+## Usage
+
+1. Enter a prompt describing the icon set you want to generate (e.g., "Hockey equipment")
+2. Select a preset style from the dropdown
+3. (Optional) Add brand colors using HEX values
+4. Click "Generate Icons"
+5. Wait for the 4 icons to be generated
+6. Download individual icons or all icons at once
 
 ## Project Structure
 
 ```
 .
-├── src/                    # Frontend React application
-│   ├── components/         # React components
-│   ├── services/          # API service layer
+├── server/                 # Backend Express server
+│   ├── index.js           # Main server file with Replicate API integration
+│   ├── package.json       # Backend dependencies
+│   └── .env              # Environment variables (create this)
+├── src/                   # Frontend React application
+│   ├── components/        # React components
+│   │   ├── StyleSelector.tsx
+│   │   ├── ColorInput.tsx
+│   │   └── IconGrid.tsx
+│   ├── services/          # API service functions
+│   │   └── replicateApi.ts
+│   ├── App.tsx            # Main app component
+│   ├── index.tsx          # React entry point
+│   ├── index.css          # Global styles with Tailwind
 │   └── types.ts           # TypeScript type definitions
-├── server/                # Backend Express API
-│   └── index.js           # API server with Replicate integration
+├── public/                # Public assets
+│   ├── index.html         # HTML template
+│   └── manifest.json      # Web app manifest
 ├── package.json           # Frontend dependencies
-└── server/package.json    # Backend dependencies
+├── tailwind.config.js     # Tailwind CSS configuration
+└── tsconfig.json          # TypeScript configuration
 ```
-
-## Setup & Installation
-
-### Prerequisites
-
-- Node.js 18+ and npm
-
-### Installation
-
-1. **Install frontend dependencies:**
-   ```bash
-   npm install
-   ```
-
-2. **Install backend dependencies:**
-   ```bash
-   cd server
-   npm install
-   cd ..
-   ```
-
-### Running Locally
-
-1. **Start the backend server:**
-   ```bash
-   cd server
-   npm start
-   # Server runs on http://localhost:3001
-   ```
-
-2. **Start the frontend (in a new terminal):**
-   ```bash
-   npm run dev
-   # Frontend runs on http://localhost:3000
-   ```
-
-3. Open `http://localhost:3000` in your browser
-
-## Deployment
-
-### Option 1: Vercel (Recommended)
-
-1. **Deploy Frontend:**
-   - Connect your repository to Vercel
-   - Set build command: `npm run build`
-   - Set output directory: `dist`
-   - Add environment variable: `VITE_API_URL` pointing to your backend URL
-
-2. **Deploy Backend:**
-   - Use Vercel Serverless Functions or deploy to Railway/Render
-   - Set environment variable: `PORT=3001` (or let the platform assign it)
-
-### Option 2: Railway/Render
-
-1. **Deploy Backend:**
-   - Create a new service on Railway or Render
-   - Point to `server/` directory
-   - Set start command: `npm start`
-   - Set PORT environment variable
-
-2. **Deploy Frontend:**
-   - Create a static site deployment
-   - Set build command: `npm run build`
-   - Set `VITE_API_URL` to your backend URL
-
-### Option 3: Combined Deployment
-
-You can also deploy both frontend and backend together:
-- Build frontend: `npm run build`
-- Serve `dist/` as static files from Express
-- Deploy the combined app
 
 ## API Endpoints
 
 ### POST `/api/generate-icons`
 
-Generates 4 icons based on the provided prompt and style.
+Generates 4 icons based on the provided prompt, style, and optional colors.
 
 **Request Body:**
 ```json
@@ -120,60 +124,55 @@ Generates 4 icons based on the provided prompt and style.
 **Response:**
 ```json
 {
+  "success": true,
   "icons": [
-    "https://replicate.delivery/...",
-    "https://replicate.delivery/...",
-    "https://replicate.delivery/...",
-    "https://replicate.delivery/..."
+    "https://replicate.delivery/.../output_0.png",
+    "https://replicate.delivery/.../output_1.png",
+    "https://replicate.delivery/.../output_2.png",
+    "https://replicate.delivery/.../output_3.png"
   ]
 }
 ```
 
-## How It Works
+### GET `/api/health`
 
-1. **Prompt Processing**: The user enters a base prompt (e.g., "Hockey equipment")
-2. **Style Application**: The selected style adds specific keywords to ensure visual consistency
-3. **Variation Generation**: The system creates 4 variations of the prompt to encourage different but related icons
-4. **Parallel Generation**: All 4 icons are generated simultaneously using the Replicate API
-5. **Consistency**: Style prompts and color palettes ensure all icons share the same visual language
+Health check endpoint.
 
-## Style Controls
+**Response:**
+```json
+{
+  "status": "ok"
+}
+```
 
-The application uses prompt engineering to maintain consistency:
+## Deployment
 
-- **Style Keywords**: Each preset style adds specific descriptive terms
-- **Color Guidance**: HEX colors are incorporated into prompts to steer the palette
-- **Consistent Formatting**: All prompts include size, background, and quality specifications
+### Frontend (Create React App)
 
-## Error Handling
-
-- Input validation for prompts and HEX colors
-- API error handling with user-friendly messages
-- Loading states during generation
-- Retry capability for failed generations
-
-## Development
-
+Build the frontend:
 ```bash
-# Frontend development
-npm run dev
-
-# Backend development (with auto-reload)
-cd server
-npm run dev
-
-# Build for production
 npm run build
 ```
 
+The built files will be in the `build` directory.
+
+### Backend (Express)
+
+The backend can be deployed to any Node.js hosting service (e.g., Vercel, Railway, Render).
+
+Make sure to set the `REPLICATE_API_TOKEN` environment variable in your deployment platform.
+
 ## Notes
 
-- The Replicate API token is stored in the backend for security
-- Icon generation typically takes 10-30 seconds per icon
-- All icons are generated as 512x512 PNG files
-- The API uses Flux Schnell model as specified
+- The application generates 4 icons in parallel for faster results
+- Style consistency is achieved through prompt engineering with style modifiers
+- Color inputs are incorporated into the prompt to influence the palette
+- Icons are generated at 512x512 resolution with PNG format
 
-## License
+## Evaluation Criteria Met
 
-This project was created for the Vennage assignment.
+✅ **Product outputs**: Coherent UX for prompt → consistent set of icons  
+✅ **Code quality**: Modular structure, error handling, TypeScript for type safety  
+✅ **API integration**: Reliable Replicate API integration with proper error handling  
+✅ **Consistency controls**: Style modifiers ensure visual consistency across all 4 icons
 

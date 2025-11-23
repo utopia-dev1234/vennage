@@ -1,15 +1,17 @@
 {
-  "name": "icon-generator-server",
+  "name": "vennage-icon-generator-server",
   "version": "1.0.0",
   "type": "module",
+  "main": "index.js",
   "scripts": {
     "start": "node index.js",
     "dev": "node --watch index.js"
   },
   "dependencies": {
     "express": "^4.18.2",
+    "replicate": "^0.25.1",
     "cors": "^2.8.5",
-    "replicate": "^0.25.1"
+    "dotenv": "^16.3.1"
   }
 }
 

@@ -1,8 +1,16 @@
 {
+  "version": 2,
   "builds": [
     {
       "src": "server/index.js",
       "use": "@vercel/node"
+    },
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "build"
+      }
     }
   ],
   "routes": [
@@ -12,8 +20,11 @@
     },
     {
       "src": "/(.*)",
-      "dest": "/dist/$1"
+      "dest": "/$1"
     }
-  ]
+  ],
+  "env": {
+    "REPLICATE_API_TOKEN": "@replicate_api_token"
+  }
 }
 

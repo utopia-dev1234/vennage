@@ -1,6 +1,9 @@
 import express from 'express';
 import cors from 'cors';
 import Replicate from 'replicate';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -8,109 +11,45 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 
-const REPLICATE_API_TOKEN = 'r8_N66Wxoi7DNfuLDi41QHPt7ZnD8Cn2Rh30pWRF';
-const MODEL = 'black-forest-labs/flux-schnell';
-
 const replicate = new Replicate({
-  auth: REPLICATE_API_TOKEN,
+  auth: process.env.REPLICATE_API_TOKEN || 'r8_N66Wxoi7DNfuLDi41QHPt7ZnD8Cn2Rh30pWRF',
 });
 
-// Style-specific prompt enhancements
-const STYLE_PROMPTS = {
+// Style prompt modifiers for consistency
+const styleModifiers = {
   'Auto': '',
-  'Bold': 'bold, vibrant colors, strong contrast, thick lines',
-  'Circular': 'circular icon, rounded, contained within a circle',
-  'Flat Colors': 'flat design, solid colors, no gradients, minimal shading',
-  'Monotone': 'monochrome, single color palette, grayscale or single hue',
-  'Outline': 'outline style, line art, no fill, clean lines',
+  'Bold': 'bold, vibrant colors, strong contrast, graphic design style',
+  'Circular': 'circular icon, rounded, contained within a circle, minimalist',
+  'Flat Colors': 'flat design, solid colors, no gradients, no shadows, modern flat icon style',
+  'Monotone': 'monochrome, single color, minimalist, simple',
+  'Outline': 'outline style, line art, no fill, clean lines, vector style',
+  'Sticker': 'sticker style, thick outline, glossy, raised appearance, vibrant colors',
+  'Pastels': 'pastel colors, soft, gentle shading, light and airy',
+  'Business': 'professional, clean, corporate style, light colors, contained in circle',
+  'Cartoon': 'cartoon style, friendly, rounded design, vibrant simple shading',
+  '3D Model': '3D rendered, metallic reflections, angular, depth, realistic lighting',
+  'Gradient': 'gradient colors, smooth color transitions, modern, dynamic',
 };
 
-const EXTENDED_STYLE_PROMPTS = {
-  'Sticker': 'sticker style, outlined, vibrant colors, playful',
-  'Pastels': 'pastel colors, soft muted palette, gentle shading',
-  'Business': 'professional, clean, corporate style, minimalist',
-  'Cartoon': 'cartoon style, rounded, playful, friendly',
-  '3D Model': '3D rendered, realistic shading, depth, metallic',
-  'Gradient': 'gradient colors, smooth color transitions',
-};
-
-function buildPrompt(basePrompt, style, colors, variation = '') {
-  let prompt = basePrompt;
+// Generate variations of the prompt for 4 different icons
+function generateIconPrompts(basePrompt, style, colors = []) {
+  const styleModifier = styleModifiers[style] || '';
+  const colorModifier = colors.length > 0 
+    ? `, color palette: ${colors.join(', ')}` 
+    : '';
   
-  if (variation) {
-    prompt = `${prompt}, ${variation}`;
-  }
+  const baseStylePrompt = `${basePrompt}${styleModifier ? ', ' + styleModifier : ''}${colorModifier}, icon, 512x512, PNG, transparent background`;
   
-  const stylePrompt = STYLE_PROMPTS[style] || EXTENDED_STYLE_PROMPTS[style] || '';
-  if (stylePrompt) {
-    prompt = `${prompt}, ${stylePrompt}`;
-  }
-  
-  if (colors && colors.length > 0) {
-    const colorList = colors.join(', ');
-    prompt = `${prompt}, color palette: ${colorList}`;
-  }
-  
-  prompt = `${prompt}, icon, 512x512, clean background, centered, high quality`;
-  
-  return prompt;
-}
-
-async function generateIcon(prompt, style, colors, variation = '') {
-  const enhancedPrompt = buildPrompt(prompt, style, colors, variation);
-  
-  try {
-    const output = await replicate.run(
-      `${MODEL}:latest`,
-      {
-        input: {
-          prompt: enhancedPrompt,
-          num_outputs: 1,
-          aspect_ratio: '1:1',
-          output_format: 'png',
-          output_quality: 90,
-        }
-      }
-    );
-    
-    if (!output || output.length === 0) {
-      throw new Error('No output received from Replicate API');
-    }
-    
-    return output[0];
-  } catch (error) {
-    console.error('Error generating icon:', error);
-    throw error;
-  }
-}
-
-// Generate 4 different icons with variations
-// Strategy: Use descriptive variations to encourage diversity while maintaining
-// consistency through shared style and color palette. The model will interpret
-// these as different related items within the theme (e.g., for "Hockey equipment"
-// it might generate: goal, helmet, stick, glove)
-async function generateIconSet(basePrompt, style, colors) {
-  // Create variations that encourage different but related icons
-  // Using numbered items and descriptive terms to guide the model
+  // Create 4 variations - you might want to use an LLM API here for better variations
+  // For now, using simple variations
   const variations = [
-    'item 1',
-    'item 2', 
-    'item 3',
-    'item 4',
+    `${baseStylePrompt}, first item`,
+    `${baseStylePrompt}, second item`,
+    `${baseStylePrompt}, third item`,
+    `${baseStylePrompt}, fourth item`,
   ];
   
-  // Generate all icons in parallel for faster results
-  // Each variation helps the model generate a different related item
-  const iconPromises = variations.map((variation, index) => {
-    const promptWithVariation = `${basePrompt}, ${variation}`;
-    
-    return generateIcon(promptWithVariation, style, colors, '').catch(error => {
-      console.error(`Error generating icon ${index + 1}:`, error);
-      throw error;
-    });
-  });
-  
-  return Promise.all(iconPromises);
+  return variations;
 }
 
 app.post('/api/generate-icons', async (req, res) => {
@@ -121,24 +60,104 @@ app.post('/api/generate-icons', async (req, res) => {
       return res.status(400).json({ error: 'Prompt and style are required' });
     }
     
-    console.log(`Generating icons for prompt: "${prompt}", style: "${style}"`);
+    const iconPrompts = generateIconPrompts(prompt, style, colors || []);
     
-    const iconUrls = await generateIconSet(prompt, style, colors || []);
-    
-    res.json({ icons: iconUrls });
-  } catch (error) {
-    console.error('API Error:', error);
-    res.status(500).json({ 
-      error: error.message || 'Failed to generate icons. Please try again.' 
+    // Generate all 4 icons in parallel
+    const generationPromises = iconPrompts.map(async (iconPrompt) => {
+      try {
+        const output = await replicate.run("black-forest-labs/flux-schnell", {
+          input: {
+            prompt: iconPrompt,
+          }
+        });
+        
+        // Get the URL from the output
+        // Replicate returns an array of FileOutput objects with a url() method
+        let url;
+        if (Array.isArray(output) && output.length > 0) {
+          // Handle FileOutput object with url() method
+          if (typeof output[0]?.url === 'function') {
+            url = output[0].url();
+          } else if (typeof output[0] === 'string') {
+            url = output[0];
+          } else {
+            url = output[0];
+          }
+        } else if (output && typeof output.url === 'function') {
+          url = output.url();
+        } else if (typeof output === 'string') {
+          url = output;
+        } else {
+          url = output;
+        }
+        
+        if (!url) {
+          throw new Error('No URL returned from Replicate API');
+        }
+        
+        // Ensure URL is a string
+        if (typeof url !== 'string') {
+          url = String(url);
+        }
+        
+        return { success: true, url };
+      } catch (error) {
+        console.error('Error generating icon:', error);
+        return { success: false, error: error.message };
+      }
     });
+    
+    const results = await Promise.all(generationPromises);
+    
+    // Check if all generations were successful
+    const failed = results.filter(r => !r.success);
+    if (failed.length > 0) {
+      return res.status(500).json({ 
+        error: 'Some icons failed to generate',
+        results 
+      });
+    }
+    
+    res.json({ 
+      success: true,
+      icons: results.map(r => r.url)
+    });
+    
+  } catch (error) {
+    console.error('Error in /api/generate-icons:', error);
+    res.status(500).json({ error: error.message });
   }
 });
 
-app.get('/health', (req, res) => {
+app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
+// Proxy endpoint for downloading images (avoids CORS issues)
+app.get('/api/proxy-image', async (req, res) => {
+  try {
+    const { url } = req.query;
+    
+    if (!url) {
+      return res.status(400).json({ error: 'URL parameter is required' });
+    }
+    
+    const response = await fetch(url);
+    if (!response.ok) {
+      return res.status(response.status).json({ error: 'Failed to fetch image' });
+    }
+    
+    const buffer = await response.arrayBuffer();
+    res.setHeader('Content-Type', response.headers.get('content-type') || 'image/png');
+    res.setHeader('Content-Disposition', `attachment; filename="icon.png"`);
+    res.send(Buffer.from(buffer));
+  } catch (error) {
+    console.error('Error proxying image:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`Server running on http://localhost:${PORT}`);
 });
 

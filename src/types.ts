@@ -1,20 +1,26 @@
-export type PresetStyle = 'Auto' | 'Bold' | 'Circular' | 'Flat Colors' | 'Monotone' | 'Outline';
+export type StyleOption = 
+  | 'Auto'
+  | 'Bold'
+  | 'Circular'
+  | 'Flat Colors'
+  | 'Monotone'
+  | 'Outline'
+  | 'Sticker'
+  | 'Pastels'
+  | 'Business'
+  | 'Cartoon'
+  | '3D Model'
+  | 'Gradient';
 
-export interface IconGenerationRequest {
+export interface GenerateIconsRequest {
   prompt: string;
-  style: PresetStyle;
+  style: StyleOption;
   colors?: string[];
 }
 
-export interface GeneratedIcon {
-  id: number;
-  url: string;
-  prompt: string;
-}
-
-export interface GenerationState {
-  isLoading: boolean;
-  icons: GeneratedIcon[];
-  error: string | null;
+export interface GenerateIconsResponse {
+  success: boolean;
+  icons?: string[];
+  error?: string;
 }
 
